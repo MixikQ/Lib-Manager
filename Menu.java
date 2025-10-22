@@ -26,12 +26,29 @@ public class Menu {
         System.out.println("\s\s2 - Add new book");
         System.out.println("\s\s3 - Edit book");
         System.out.println("\s\s4 - Remove book");
+        System.out.println("\s\s5 - Sort library");
         System.out.println("\n\s\s0 - Exit...");
     }
     private void Exit() {
         System.exit(0);
     }
-    
+    public int ChooseOption(int min, int max) {
+        int In;
+        while (true) {
+            try {
+            In = Integer.parseInt(PFManager.Input());
+            if (In < min || In > max) {
+                System.out.println("Wrong number, type option number again:");
+                continue;
+            }
+            break;
+            } catch (NumberFormatException e) {
+                System.err.println("Number Format Exception | " + e);
+                System.out.println("Not a number, type option number again:");
+            }
+        }
+        return In;
+    }
     public void PrintBookList(ArrayList<Book> books) {
         System.out.println("\nHere is your books:");
         if (!books.isEmpty()) {
@@ -48,7 +65,7 @@ public class Menu {
         PrintBookList(BookList.GetBookList());
         PrintAvailCommands();
         System.out.println("Type number of needed command:");
-        SetCurrentPage(Integer.parseInt(PFManager.Input()));
+        SetCurrentPage(ChooseOption(0, 5));
     }
 
     public void PrintStartPage() {
@@ -63,7 +80,7 @@ public class Menu {
         String Author;
         int ReleaseYear;
         String Genre;
-        System.out.println("To add a book type path to your book (only .txt supports)");
+        System.out.println("To add a book type path to your book (only .txt supports) or \"Lost\" to add book without path");
         System.out.println("Type 0 to return to list page...");
         Path = PFManager.Input();
         while (!PFManager.IsFileExists(Path) && !Path.equals("0") && !Path.equals("Lost")) {
@@ -83,6 +100,9 @@ public class Menu {
         while (true) {
             try {
             ReleaseYear = Integer.parseInt(PFManager.Input());
+            if (ReleaseYear < 0) {
+                ReleaseYear = -1;
+            }
             break;
             } catch (NumberFormatException e) {
                 System.err.println("Number Format Exception | " + e);
@@ -102,50 +122,25 @@ public class Menu {
     public void PrintEditPage() {
         PrintBookList(BookList.GetBookList());
         System.out.println("To edit book, type it's ID or type 0 to return to List page:");
-        int In;
-        while (true) {
-            try {
-            In = Integer.parseInt(PFManager.Input());
-            if (In < 0 || In > BookList.GetSize()) {
-                System.out.println("Wrong number, type ID again:");
-                continue;
-            }
-            if (In == 0) {
-                SetCurrentPage(1);
-                return;
-            }
-            break;
-            } catch (NumberFormatException e) {
-                System.err.println("Number Format Exception | " + e);
-                System.out.println("Not a number, type ID again:");
-            }
+        int In = ChooseOption(0, BookList.GetSize());
+        if (In == 0) {
+            SetCurrentPage(1);
+            return;
         }
         Book book = BookList.GetBookList().get(In - 1);
         while (GetCurrentPage() != 1) {
             System.out.println("\nChosen book:");
             System.out.println(book.PrintBook() + " (" + book.GetPath() + ")");
             System.out.println("===================");
-            System.out.println("Available parametrs to change:");
+            System.out.println("Available option to change:");
             System.out.println("\s\s1 - Title");
             System.out.println("\s\s2 - Author");
             System.out.println("\s\s3 - Release Year");
             System.out.println("\s\s4 - Genre");
             System.out.println("\s\s5 - Path");
             System.out.println("\n\s\s0 - Return to list page");
-            System.out.println("Type Parametr number:");
-            while (true) {
-                try {
-                In = Integer.parseInt(PFManager.Input());
-                if (In < 0 || In > 5) {
-                    System.out.println("Wrong number, type Parametr number again:");
-                    continue;
-                }
-                break;
-                } catch (NumberFormatException e) {
-                    System.err.println("Number Format Exception | " + e);
-                    System.out.println("Not a number, type Parametr number again:");
-                }
-            }
+            System.out.println("Type option number:");
+            In = ChooseOption(0, 5);
             switch (In) {
                 case 0 -> {
                     SetCurrentPage(1);
@@ -199,20 +194,7 @@ public class Menu {
     public Library PrintRemovePage() {
         PrintBookList(BookList.GetBookList());
         System.out.println("Type book ID you want to remove or type 0 to return to list page:");
-        int In;
-        while (true) {
-            try {
-            In = Integer.parseInt(PFManager.Input());
-            if (In < 0 || In > BookList.GetSize()) {
-                System.out.println("Wrong number, type ID again:");
-                continue;
-            }
-            break;
-            } catch (NumberFormatException e) {
-                System.err.println("Number Format Exception | " + e);
-                System.out.println("Not a number, type ID again:");
-            }
-        }
+        int In = ChooseOption(0, BookList.GetSize()); 
         if (In == 0) {
             SetCurrentPage(1);
             return BookList;
@@ -221,9 +203,78 @@ public class Menu {
         return BookList;
     }
 
-    // public void SortLibrary() {
-    //     BookList.GetBookList().sort();
-    // } 
+    public void PrintSortingPage() {
+        PrintBookList(BookList.GetBookList());
+        System.out.println("Availiable options to sort by:");
+        System.out.println("\s\s1 - Title (A-Z)");
+        System.out.println("\s\s2 - Author (A-Z)");
+        System.out.println("\s\s3 - Release Year (Newest First)");
+        System.out.println("\s\s4 - Genre (A-Z)");
+        System.out.println("\s\s5 - Reversed Title (Z-A)");
+        System.out.println("\s\s6 - Reversed Author (Z-A)");
+        System.out.println("\s\s7 - Reversed Release Year (Unknown/Oldest First)");
+        System.out.println("\s\s8 - Reversed Genre (Z-A)");
+        System.out.println("\n\s\s0 - Return to list page");
+        System.out.println("Type option number:");
+        int In = ChooseOption(0, 8);
+        switch (In) {
+            case 1 -> {
+                SortLibrary(Sortings.TITLE);
+            }
+            case 2 -> {
+                SortLibrary(Sortings.AUTHOR);
+            }
+            case 3 -> {
+                SortLibrary(Sortings.YEAR);
+            }
+            case 4 -> {
+                SortLibrary(Sortings.GENRE);
+            }
+            case 5 -> {
+                SortLibrary(Sortings.REVERSED_TITLE);
+            }
+            case 6 -> {
+                SortLibrary(Sortings.REVERSED_AUTHOR);
+            }
+            case 7 -> {
+                SortLibrary(Sortings.REVERSED_YEAR);
+            }
+            case 8 -> {
+                SortLibrary(Sortings.REVERSED_GENRE);
+            }
+        }
+        SetCurrentPage(1);
+    }
+
+    public void SortLibrary(Sortings e) {
+        switch (e) {
+            case TITLE -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetTitle().compareToIgnoreCase(o2.GetTitle()));
+            }
+            case REVERSED_TITLE -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetTitle().compareToIgnoreCase(o1.GetTitle()));
+            }
+            case AUTHOR -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetAuthor().compareToIgnoreCase(o2.GetAuthor()));
+            }
+            case REVERSED_AUTHOR -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetAuthor().compareToIgnoreCase(o1.GetAuthor()));
+            }
+            case YEAR -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetReleaseYear() - o1.GetReleaseYear());
+            }
+            case REVERSED_YEAR -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetReleaseYear() - o2.GetReleaseYear());
+            }
+            case GENRE -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetGenre().compareToIgnoreCase(o2.GetGenre()));
+            }
+            case REVERSED_GENRE -> {
+                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetGenre().compareToIgnoreCase(o1.GetGenre()));
+            }
+        }
+        
+    } 
 
     public void PrintCurrentPage() {
         switch (CurrentPage) {
@@ -243,6 +294,10 @@ public class Menu {
             }
             case 4 -> { // Remove
                 BookList = PrintRemovePage();
+                PFManager.WriteLogFile(BookList);
+            }
+            case 5 -> { // Sorting
+                PrintSortingPage();
                 PFManager.WriteLogFile(BookList);
             }
             case 99 -> { // Start
