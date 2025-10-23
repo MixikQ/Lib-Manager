@@ -5,17 +5,18 @@ public class Menu {
 
     public Menu(Library l, PathFileManager pfm) {
         this.CurrentPage = 99;
-        this.BookList = l;
+        this.BookLib = l;
         this.PFManager = pfm;
     }
 
     private int CurrentPage;
-    private Library BookList;
+    private Library BookLib;
     private final PathFileManager PFManager;
 
     public int GetCurrentPage() {
         return CurrentPage;
     }
+
     public void SetCurrentPage(int x) {
         CurrentPage = x;
     }
@@ -27,11 +28,14 @@ public class Menu {
         System.out.println("\s\s3 - Edit book");
         System.out.println("\s\s4 - Remove book");
         System.out.println("\s\s5 - Sort library");
+        System.out.println("\s\s6 - Find book in library");
         System.out.println("\n\s\s0 - Exit...");
     }
+
     private void Exit() {
         System.exit(0);
     }
+
     public int ChooseOption(int min, int max) {
         int In;
         while (true) {
@@ -49,6 +53,7 @@ public class Menu {
         }
         return In;
     }
+
     public void PrintBookList(ArrayList<Book> books) {
         System.out.println("\nHere is your books:");
         if (!books.isEmpty()) {
@@ -62,10 +67,10 @@ public class Menu {
     }
 
     public void PrintListPage() {
-        PrintBookList(BookList.GetBookList());
+        PrintBookList(BookLib.GetBookList());
         PrintAvailCommands();
         System.out.println("Type number of needed command:");
-        SetCurrentPage(ChooseOption(0, 5));
+        SetCurrentPage(ChooseOption(0, 6));
     }
 
     public void PrintStartPage() {
@@ -89,7 +94,7 @@ public class Menu {
         }
         if (Path.equals("0")) {
             SetCurrentPage(1);
-            return BookList;
+            return BookLib;
         }
         System.out.println("Type book's Title:");
         Title = PFManager.Input();
@@ -112,22 +117,22 @@ public class Menu {
         System.out.println("Type book Genre:");
         Genre = PFManager.Input();
         Book book = new Book(Title, Author, ReleaseYear, Genre, Path);
-        BookList.AddBook(book);
+        BookLib.AddBook(book);
         System.out.println("Book \"" + book.PrintBook() + "\" added to the library!");
         System.out.println("\nYou can add another book below");
-        return BookList;
+        return BookLib;
     }
 
     // Edit Book with validating
     public void PrintEditPage() {
-        PrintBookList(BookList.GetBookList());
+        PrintBookList(BookLib.GetBookList());
         System.out.println("To edit book, type it's ID or type 0 to return to List page:");
-        int In = ChooseOption(0, BookList.GetSize());
+        int In = ChooseOption(0, BookLib.GetSize());
         if (In == 0) {
             SetCurrentPage(1);
             return;
         }
-        Book book = BookList.GetBookList().get(In - 1);
+        Book book = BookLib.GetBookList().get(In - 1);
         while (GetCurrentPage() != 1) {
             System.out.println("\nChosen book:");
             System.out.println(book.PrintBook() + " (" + book.GetPath() + ")");
@@ -190,21 +195,22 @@ public class Menu {
         }
     }
 
-    // Remove Book with confirmation
+    // Remove Book without confirmation
     public Library PrintRemovePage() {
-        PrintBookList(BookList.GetBookList());
+        PrintBookList(BookLib.GetBookList());
         System.out.println("Type book ID you want to remove or type 0 to return to list page:");
-        int In = ChooseOption(0, BookList.GetSize()); 
+        int In = ChooseOption(0, BookLib.GetSize()); 
         if (In == 0) {
             SetCurrentPage(1);
-            return BookList;
+            return BookLib;
         }
-        BookList.RemoveBook(In - 1);
-        return BookList;
+        BookLib.RemoveBook(In - 1);
+        return BookLib;
     }
 
+    // Sort library with chosen method
     public void PrintSortingPage() {
-        PrintBookList(BookList.GetBookList());
+        PrintBookList(BookLib.GetBookList());
         System.out.println("Availiable options to sort by:");
         System.out.println("\s\s1 - Title (A-Z)");
         System.out.println("\s\s2 - Author (A-Z)");
@@ -219,62 +225,55 @@ public class Menu {
         int In = ChooseOption(0, 8);
         switch (In) {
             case 1 -> {
-                SortLibrary(Sortings.TITLE);
+                BookLib.SortLibrary(Sortings.TITLE);
             }
             case 2 -> {
-                SortLibrary(Sortings.AUTHOR);
+                BookLib.SortLibrary(Sortings.AUTHOR);
             }
             case 3 -> {
-                SortLibrary(Sortings.YEAR);
+                BookLib.SortLibrary(Sortings.YEAR);
             }
             case 4 -> {
-                SortLibrary(Sortings.GENRE);
+                BookLib.SortLibrary(Sortings.GENRE);
             }
             case 5 -> {
-                SortLibrary(Sortings.REVERSED_TITLE);
+                BookLib.SortLibrary(Sortings.REVERSED_TITLE);
             }
             case 6 -> {
-                SortLibrary(Sortings.REVERSED_AUTHOR);
+                BookLib.SortLibrary(Sortings.REVERSED_AUTHOR);
             }
             case 7 -> {
-                SortLibrary(Sortings.REVERSED_YEAR);
+                BookLib.SortLibrary(Sortings.REVERSED_YEAR);
             }
             case 8 -> {
-                SortLibrary(Sortings.REVERSED_GENRE);
+                BookLib.SortLibrary(Sortings.REVERSED_GENRE);
             }
         }
         SetCurrentPage(1);
     }
 
-    public void SortLibrary(Sortings e) {
-        switch (e) {
-            case TITLE -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetTitle().compareToIgnoreCase(o2.GetTitle()));
-            }
-            case REVERSED_TITLE -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetTitle().compareToIgnoreCase(o1.GetTitle()));
-            }
-            case AUTHOR -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetAuthor().compareToIgnoreCase(o2.GetAuthor()));
-            }
-            case REVERSED_AUTHOR -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetAuthor().compareToIgnoreCase(o1.GetAuthor()));
-            }
-            case YEAR -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetReleaseYear() - o1.GetReleaseYear());
-            }
-            case REVERSED_YEAR -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetReleaseYear() - o2.GetReleaseYear());
-            }
-            case GENRE -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o1.GetGenre().compareToIgnoreCase(o2.GetGenre()));
-            }
-            case REVERSED_GENRE -> {
-                BookList.GetBookList().sort((Book o1, Book o2) -> o2.GetGenre().compareToIgnoreCase(o1.GetGenre()));
-            }
+    public void PrintFindingPage() {
+        System.out.println("Type string you want to find or hit Enter to return to list page:");
+        String In = PFManager.Input();
+        if (In.equals("")) {
+            SetCurrentPage(1);
+            return;
         }
-        
-    } 
+        ArrayList<Integer> FoundBooks = BookLib.FindBook(In);
+        if (!FoundBooks.isEmpty()) {
+            System.out.println("Found books:");
+            for (int item : FoundBooks) {
+                Book TempBook = BookLib.GetBookList().get(item);
+                System.out.println("(" + (item + 1) + ") " + TempBook.PrintBook() + " (Path: " + TempBook.GetPath() + ")"); 
+            }
+        } else {
+            System.out.println("Nothing is found :(");
+        }
+        System.out.println("Hit Enter to return to list page...");
+        PFManager.Input();
+        SetCurrentPage(1);
+
+    }
 
     public void PrintCurrentPage() {
         switch (CurrentPage) {
@@ -285,20 +284,23 @@ public class Menu {
                 PrintListPage();
             }
             case 2 -> { // Add
-                BookList = PrintAddPage();
-                PFManager.WriteLogFile(BookList);
+                BookLib = PrintAddPage();
+                PFManager.WriteLogFile(BookLib);
             }
             case 3 -> { // Edit
                 PrintEditPage();
-                PFManager.WriteLogFile(BookList);
+                PFManager.WriteLogFile(BookLib);
             }
             case 4 -> { // Remove
-                BookList = PrintRemovePage();
-                PFManager.WriteLogFile(BookList);
+                BookLib = PrintRemovePage();
+                PFManager.WriteLogFile(BookLib);
             }
             case 5 -> { // Sorting
                 PrintSortingPage();
-                PFManager.WriteLogFile(BookList);
+                PFManager.WriteLogFile(BookLib);
+            }
+            case 6 -> {
+                PrintFindingPage();
             }
             case 99 -> { // Start
                 PrintStartPage();
